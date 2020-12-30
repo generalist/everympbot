@@ -1,5 +1,6 @@
-# version 0.1
+# version 0.2
 # assembles a very minimal data line from a set of probably-OK sample IDs
+# adds a Wikidata link
 
 import requests
 import json
@@ -20,12 +21,15 @@ print(member)
 
 
 url = 'https://query.wikidata.org/sparql'
-query1 = """SELECT distinct ?mp ?mpLabel ?partyLabel ?seatLabel ?start (min(?end) as ?end2) (round(?end2 - ?start) as ?days) 
+query1 = """# script to generate items for @everympbot - andrew@generalist.org.uk
+#
+
+SELECT distinct ?mp ?mpLabel ?partyLabel ?seatLabel ?start (min(?end) as ?end2) (round(?end2 - ?start) as ?days) 
 ((round(?days/36.525)/10) as ?years)
 (concat(?mpLabel, " (",str(year(?born)),"-",str(year(?died)),") was a ", ?partyLabel, " MP for ",
         ?seatLabel, ", serving ", str(?years), " years, ",      
         str(year(?start)), "-", str(year(?end2)), ".") as ?string)
-(concat(?mpLabel, " (born ",str(year(?born)),") was a ", ?partyLabel, " MP for ",
+(concat(?mpLabel, " (born ",str(year(?born)),") is a former ", ?partyLabel, " MP for ",
         ?seatLabel, ", serving ", str(?years), " years, ",      
         str(year(?start)), "-", str(year(?end2)), ".") as ?string2)
 where { VALUES ?mp { wd:"""
@@ -85,17 +89,21 @@ with open("service_file.json", "w") as write_file:
 # now to analyse it
 
 for item in servicejson['results']['bindings']:
+    mp = item['mp']['value']
     if 'string' in item:
         slug = item['string']['value'] 
     if not 'string' in item:
         slug = item['string2']['value']
 
 print(slug)
+print(mp)
 
-print(member)
+newslug = slug + " | WD: " + mp
+
+print(newslug)
 
 with open("candidates.txt", "a") as candidates:
-    candidates.write(member + "\t" + slug + "\n")
+    candidates.write(member + "\t" + newslug + "\n")
 
 # we now have the tweetable one-liner as a slug
 
