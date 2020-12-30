@@ -1,6 +1,6 @@
 # everympbot
 
-This is a Python script to assemble tweets for the @everympbot account on Twitter. It pulls data from Wikidata to generate a short summary for a given MP.
+This is a Python script to assemble tweets for the [@everympbot](https://twitter.com/everympbot) account on Twitter. It pulls data from Wikidata to generate a short summary for a given MP.
 
 **Version 0**
 
