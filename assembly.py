@@ -1,6 +1,7 @@
-# version 0.2
+# version 0.3
 # assembles a very minimal data line from a set of probably-OK sample IDs
-# adds a Wikidata link
+# adds a Wikipedia link if present, otherwise WD; adds ODNB and Rush if known
+# adds Historic Hansard link if known - one selected at random if 2+ are present
 
 import requests
 import json
@@ -32,6 +33,7 @@ SELECT distinct ?mp ?mpLabel ?partyLabel ?seatLabel ?start (min(?end) as ?end2) 
 (concat(?mpLabel, " (born ",str(year(?born)),") is a former ", ?partyLabel, " MP for ",
         ?seatLabel, ", serving ", str(?years), " years, ",      
         str(year(?start)), "-", str(year(?end2)), ".") as ?string2)
+?wikipedia ?odnb ?rush (sample(?h) as ?hansard)
 where { VALUES ?mp { wd:"""
 query2 = """ } # set MP here
   ?mp wdt:P569 ?born . optional { ?mp wdt:P570 ?died }
@@ -69,8 +71,15 @@ query2 = """ } # set MP here
   # now take our starts as the key, and match each to its appropriate end - the next one along
   # this is the *smallest* end date which is still *larger* than the start date
   # so filter by larger here, and smallest using min in the SELECT clause
-  filter(?end > ?start) . # note > not >= 
-} group by ?mp ?mpLabel ?partyLabel ?seatLabel ?start ?born ?died order by ?start """
+  filter(?end > ?start) . # note > not >=
+  # add Wikipedia link
+  optional { ?wikipedia schema:about ?mp .
+             ?wikipedia schema:isPartOf <https://en.wikipedia.org/>. }
+  optional { ?mp wdt:P1415 ?odnb }
+  optional { ?mp wdt:P4471 ?rush }
+  optional { ?mp wdt:P2015 ?h }
+} group by ?mp ?mpLabel ?partyLabel ?seatLabel ?start ?born ?died ?wikipedia ?odnb ?rush
+order by ?start """
 
 query = query1 + member + query2
 
@@ -94,16 +103,26 @@ for item in servicejson['results']['bindings']:
         slug = item['string']['value'] 
     if not 'string' in item:
         slug = item['string2']['value']
+    if 'wikipedia' in item:
+        wikilink = item['wikipedia']['value']
+        slug = slug + " | WP: " + wikilink
+    else:
+        slug = slug + " | WD: " + mp
+    if 'hansard' in item:
+        hansard = item['hansard']['value']
+        slug = slug + ' | Hansard: https://api.parliament.uk/historic-hansard/people/' + hansard
+        # nb this only takes ONE hansard link if TWO exist, so may be odd
+    if 'odnb' in item:
+        odnb = item['odnb']['value']
+        slug = slug + ' | ODNB: https://doi.org/10.1093/ref:odnb/' + odnb
+    if 'rush' in item:
+        rush = item['rush']['value']
+        slug = slug + ' | Rush: https://membersafter1832.historyofparliamentonline.org/members/' + rush
 
 print(slug)
-print(mp)
-
-newslug = slug + " | WD: " + mp
-
-print(newslug)
 
 with open("candidates.txt", "a") as candidates:
-    candidates.write(member + "\t" + newslug + "\n")
+    candidates.write(member + "\t" + slug + "\n")
 
 # we now have the tweetable one-liner as a slug
 
