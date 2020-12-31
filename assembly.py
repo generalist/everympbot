@@ -1,7 +1,8 @@
-# version 0.3
+# version 0.4
 # assembles a very minimal data line from a set of probably-OK sample IDs
 # adds a Wikipedia link if present, otherwise WD; adds ODNB and Rush if known
 # adds Historic Hansard link if known - one selected at random if 2+ are present
+# adds a check to ensure only tweets if continuous terms
 
 import requests
 import json
@@ -95,10 +96,12 @@ print(servicejson)
 with open("service_file.json", "w") as write_file:
     json.dump(servicejson, write_file)
 
-# now to analyse it
+# now to break it down
 
+counter = 0
 for item in servicejson['results']['bindings']:
     mp = item['mp']['value']
+    counter = counter + 1
     if 'string' in item:
         slug = item['string']['value'] 
     if not 'string' in item:
@@ -119,12 +122,18 @@ for item in servicejson['results']['bindings']:
         rush = item['rush']['value']
         slug = slug + ' | Rush: https://membersafter1832.historyofparliamentonline.org/members/' + rush
 
-print(slug)
-
-with open("candidates.txt", "a") as candidates:
-    candidates.write(member + "\t" + slug + "\n")
-
 # we now have the tweetable one-liner as a slug
 
-quit ()
+# add a check to make sure that there's only one line in the results
+# (ie one continuing period of service - testcase for this is Q327790)
+
+if counter == 1:
+    print("There are " + str(counter) + " lines - this is OK - ready to tweet")
+    print(slug)
+    with open("candidates.txt", "a") as candidates:
+        candidates.write(member + "\t" + slug + "\n")
+    quit ()
+else:
+    print("There are " + str(counter) + " lines - this is too many - not ready to tweet")
+    quit()
 
