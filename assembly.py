@@ -1,6 +1,7 @@
-# version 0.5
+# version 0.6
 #
 # more complex one-line slug that can cope with multiple parties, terms
+# adds a counter for seats and parties
 # 
 # adds a Wikipedia link if present, otherwise WD; adds ODNB and Rush if known
 # adds Historic Hansard link if known - one selected at random if 2+ are present
@@ -8,6 +9,7 @@
 import requests
 import json
 import pandas as pd
+from num2word import word
 
 # first let us find a member - list of suitable IDs is in sourceids.txt
 
@@ -157,6 +159,8 @@ for item in wdqsA['results']['bindings']:
         slug = name + " (born " + born + ") is a former"
     parties = item['parties']['value']
     seats = item['seats']['value']
+    partyword = word(parties)
+    seatword = word(seats)
     party = item['party']['value']
     seat = item['seat']['value']
     if parties == '1':
@@ -164,14 +168,14 @@ for item in wdqsA['results']['bindings']:
             slug = slug + " " + party + " Member of Parliament for " + seat + ", "
             # one party, one seat - "Con MP for Wessex"
         else:
-            slug = slug + " " + party + " Member of Parliament for various seats, "
+            slug = slug + " " + party + " Member of Parliament for " + seatword.lower() + " seats, "
             # one party, multiple seats - "Con MP for various seats"
     else:
         if seats == '1':
-            slug = slug + " Member of Parliament for " + seat + " for various parties, "
+            slug = slug + " Member of Parliament for " + seat + " for " + partyword.lower() + " parties, "
             # one party, one seat - "MP for Wessex for various parties"
         else:
-            slug = slug + " Member of Parliament for various seats and parties, "
+            slug = slug + " Member of Parliament for " + seatword.lower() + " seats and " + partyword.lower() + " parties, "
             # one party, multiple seats - "MP for various seats and parties"
     # the bit below writes to "links"
     # so we can add the term dates in between the slug and the links
