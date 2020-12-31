@@ -11,3 +11,4 @@ A shell script then uses the [everywordbot](https://github.com/aparrish/everywor
 * 0.1 - minimal one-line tweet.
 * 0.2 - with Wikidata link only.
 * 0.3 - with Wikipedia or Wikidata link, plus optional ODNB, Hansard, Rush links.
+* 0.4 - adds a check to make sure that there was continuous service (otherwise it would only tweet one half of it)
