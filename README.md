@@ -16,3 +16,9 @@ A shell script then uses the [everywordbot](https://github.com/aparrish/everywor
 * 0.4 - adds a check to make sure that there was continuous service (otherwise it would only tweet one half of it)
 * 0.5 - rewritten to cope with multiple distinct periods of office, seats, or parties.
 * 0.6 - tweaked to add a number of parties or seats where appropriate
+
+**Version 1**
+
+This has the same underlying structure as 0.6, but is restructured to produce a multi-line tweet and a detailed logfile. This is then passed to a short script (not currently included since it embeds the API keys) which picks up the file and posts it using the [twython](https://github.com/ryanmcgrath/twython) framework. A shell script calls the twython script on a scheduled basis.
+
+* 1.0 - initial multi-line tweet structure and new posting system
