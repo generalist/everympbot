@@ -1,15 +1,20 @@
-# version 0.6
+# version 1.0
 #
-# more complex one-line slug that can cope with multiple parties, terms
+# multiline slug that can cope with multiple parties, terms
 # adds a counter for seats and parties
 # 
 # adds a Wikipedia link if present, otherwise WD; adds ODNB and Rush if known
 # adds Historic Hansard link if known - one selected at random if 2+ are present
+#
+# tweet is put into a seperate file to be picked up by the tweeting script
+
+version = '1.0' # set version here for logging
 
 import requests
 import json
 import pandas as pd
 from num2word import word
+from datetime import datetime
 
 # first let us find a member - list of suitable IDs is in sourceids.txt
 
@@ -181,9 +186,9 @@ for item in wdqsA['results']['bindings']:
     # so we can add the term dates in between the slug and the links
     if 'wikipedia' in item:
         wikilink = item['wikipedia']['value']
-        links = " | WP: " + wikilink
+        links = " | Wikipedia: " + wikilink
     else:
-        links = " | WD: " + mp
+        links = " | Wikidata: " + mp
     if 'hansard' in item:
         hansard = item['hansard']['value']
         links = links + ' | Hansard: https://api.parliament.uk/historic-hansard/people/' + hansard
@@ -204,18 +209,31 @@ for item in wdqsB['results']['bindings']:
 
 termsclean = terms[2:]
 
+# trim off the leading comma on terms
+
+links = links.replace(' |', '\n*')
+
+# turn the links into a pretty multi-line element
+
 print(slug)
 print(terms)
 print(termsclean)
 print(links)
 
-print(member + "\t" + slug + termsclean + "." + links)
+tweet = slug + termsclean + "." +"\n" + links
 
-with open("candidates.txt", "a") as candidates:
-    candidates.write(member + "\t" + slug + termsclean + "." + links + "\n")
+# set up the tweet content
+
+print(tweet)
+
+with open("nexttweet.txt", "w") as candidates:
+    candidates.write(tweet + "\n")
+
+# drop the tweet coment into a clean file
+
+with open("generatedlog.txt", "a") as logfile:
+    logfile.write(member + "\t" + str(datetime.now()) + "\t" + version + "\t" + tweet.replace('\n', ' | ') + "\n")
+
+# append the item, date, version, and tweeted content
+
 quit ()
-
-
-# we now have the tweetable one-liner as a slug
-
-
