@@ -17,6 +17,8 @@ The generated tweet is then passed to a short script which picks up the file and
 A shell script calls the generator and the twython script on a scheduled basis to produce one new tweet and then immediately post it.
 
 * 1.0 - initial multi-line tweet structure and new posting system
+* 1.1 - queries for image and sets it up for tweeting
+* 1.2 - logs image correctly
 
 **Version 0**
 
