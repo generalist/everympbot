@@ -1,4 +1,4 @@
-# version 1.0
+# version 1.1
 #
 # multiline slug that can cope with multiple parties, terms
 # adds a counter for seats and parties
@@ -7,8 +7,12 @@
 # adds Historic Hansard link if known - one selected at random if 2+ are present
 #
 # tweet is put into a seperate file to be picked up by the tweeting script
+# 
+# 1.1 adds an image! if it exists.
+#
+# image is put into a seperate file, and nextimage.txt contains the filename
 
-version = '1.0' # set version here for logging
+version = '1.1' # set version here for logging
 
 import requests
 import json
@@ -38,7 +42,8 @@ query1 = """# script to generate items for @everympbot - andrew@generalist.org.u
 
 select distinct ?mp ?mpLabel ?parties ?seats 
 (sample(?seatname) as ?seat) (sample(?partyname) as ?party)
-(year(?born) as ?birthyear) (year(?died) as ?deathyear) ?wikipedia ?odnb ?rush (sample(?h) as ?hansard)
+(year(?born) as ?birthyear) (year(?died) as ?deathyear) ?wikipedia ?odnb ?rush
+(sample(?h) as ?hansard) (sample(?i) as ?image)
 where
 {
   VALUES ?mp { wd:"""
@@ -75,6 +80,7 @@ query2 = """ } # set MP here
   optional { ?mp wdt:P1415 ?odnb }
   optional { ?mp wdt:P4471 ?rush }
   optional { ?mp wdt:P2015 ?h }
+  optional { ?mp wdt:P18 ?i }
 } group by ?mp ?mpLabel ?parties ?seats ?born ?died ?wikipedia ?odnb ?rush """
 
 queryA = query1 + member + query2
@@ -199,7 +205,12 @@ for item in wdqsA['results']['bindings']:
     if 'rush' in item:
         rush = item['rush']['value']
         links = links + ' | Rush: https://membersafter1832.historyofparliamentonline.org/members/' + rush
-
+    if 'image' in item:
+        image = item['image']['value']
+        imagelink = image + '?width=640'
+        if image.find('/'):
+          imagetype = image.rsplit('.', 1)[1]
+        
 # now we break down the terms in query B
 
 terms = ''
@@ -235,5 +246,18 @@ with open("generatedlog.txt", "a") as logfile:
     logfile.write(member + "\t" + str(datetime.now()) + "\t" + version + "\t" + tweet.replace('\n', ' | ') + "\n")
 
 # append the item, date, version, and tweeted content
+
+# but wait, we forgot our images!
+
+if 'imagelink' in globals():
+    print(imagelink)
+    print(imagetype)
+    img = requests.get(imagelink, allow_redirects=True)
+    filename = 'twitterimage.' + imagetype
+    print(filename)
+    open(filename, 'wb').write(img.content)
+    open("nextimage.txt", "w").write(filename)
+else:
+     print('no image')
 
 quit ()
