@@ -4,7 +4,7 @@ This is a Python script to assemble tweets for the [@everympbot](https://twitter
 
 **Version 1**
 
-This has the same underlying structure as 0.6, but is restructured to produce a multi-line tweet and a detailed logfile. It randomly selects one person from a list of candidates (in `sourceids.txt`), prefiltered as below in 0.6 below.
+This has the same underlying structure as 0.6, but is restructured to produce a multi-line tweet and a detailed logfile. It randomly selects one person from a list of candidates (in `sourceids.txt`), prefiltered as below in 0.6.
 
 The generated tweet is then passed to a short script which picks up the file and posts it using the [twython](https://github.com/ryanmcgrath/twython) framework.
 
