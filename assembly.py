@@ -1,4 +1,4 @@
-# version 1.1
+# version 1.2
 #
 # multiline slug that can cope with multiple parties, terms
 # adds a counter for seats and parties
@@ -11,8 +11,10 @@
 # 1.1 adds an image! if it exists.
 #
 # image is put into a seperate file, and nextimage.txt contains the filename
+#
+# 1.2 adds a log to say there was an image
 
-version = '1.1' # set version here for logging
+version = '1.2' # set version here for logging
 
 import requests
 import json
@@ -242,11 +244,6 @@ with open("nexttweet.txt", "w") as candidates:
 
 # drop the tweet coment into a clean file
 
-with open("generatedlog.txt", "a") as logfile:
-    logfile.write(member + "\t" + str(datetime.now()) + "\t" + version + "\t" + tweet.replace('\n', ' | ') + "\n")
-
-# append the item, date, version, and tweeted content
-
 # but wait, we forgot our images!
 
 if 'imagelink' in globals():
@@ -257,7 +254,15 @@ if 'imagelink' in globals():
     print(filename)
     open(filename, 'wb').write(img.content)
     open("nextimage.txt", "w").write(filename)
+    with open("generatedlog.txt", "a") as logfile:
+        logfile.write(member + "\t" + str(datetime.now()) + "\t" + version + "\t" + tweet.replace('\n', ' | ') + "\t" + image + "\n")
+# log includes image filename
+
 else:
-     print('no image')
+    print('no image')
+    with open("generatedlog.txt", "a") as logfile:
+        logfile.write(member + "\t" + str(datetime.now()) + "\t" + version + "\t" + tweet.replace('\n', ' | ') + "\tno_image\n")
+# log padded with tabs to be blank
 
 quit ()
+
