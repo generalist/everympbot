@@ -8,6 +8,8 @@ The second script,`tweeting.py`, pulls credentials from `config.txt` and then us
 
 The shell script can be run manually or set to run on a regular basis.
 
+A second pair of scripts, `twitterbot-1386.sh` and `assembly-1386.sh`, generate a simplified tweet for medieval MPs (currently only using the 1386-1421 HoP volume)
+
 **Version log**
 
 * 0.1 - minimal one-line tweet using [everywordbot](https://github.com/aparrish/everywordbot)
