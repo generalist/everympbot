@@ -1,12 +1,13 @@
-# version 1
+# version 1.2
 #
 # this is hardcoded to look for very early Parliaments -
 # currently only MPs in the HoP 1386-1421 volumes
 # 
-
-version = '1386-1.1' # set version here for logging
-
 # 1.1 adds born/died dates
+# 1.1 adds constituencies if possible
+
+version = '1386-1.2' # set version here for logging
+
 
 import requests
 import json
@@ -27,14 +28,15 @@ print(member)
 
 # now the SPARQL queries
 # A gets name, born, died, seat count, seat name, party count, party name, and links
-# B gets the terms in office
+# no need for B as not handling continuing terms
 
 
 url = 'https://query.wikidata.org/sparql'
 query1 = """# script to generate items for @everympbot - andrew@generalist.org.uk
 # using the 1386 HoP data
 
-select distinct ?mp ?mpLabel ?parliaments ?wikipedia ?odnb ?hop
+select distinct ?mp ?mpLabel ?parliaments ?seats (sample(?seatname) as ?seat)
+?wikipedia ?odnb ?hop
 (min(?startyear) as ?earliest) (max(?endyear) as ?latest)
 (sample(?i) as ?image)
 (year(?born) as ?birthyear) (year(?died) as ?deathyear) 
@@ -53,11 +55,13 @@ query2 = """ } # set MP here
   # at least year precision 
   ?position wdt:P571 ?start. bind(year(?start) as ?startyear) .
   ?position wdt:P576 ?end. bind(year(?end) as ?endyear) .
+  optional { ?ps pq:P768 ?const . ?const rdfs:label ?seatname . filter(lang(?seatname) = "en") }
   filter not exists { ?ps pq:P1534 wd:Q50393121 }
     SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-  { select distinct ?mp ?mpLabel ?parliaments 
+  { select distinct ?mp ?mpLabel ?parliaments (count(distinct ?seatname) as ?seats) 
       WHERE {
         ?mp wdt:P31 wd:Q5 . ?mp p:P39 ?ps . ?ps ps:P39 ?position . ?position wdt:P279 wd:Q18018860.
+        optional { ?ps pq:P768 ?seat . ?seat rdfs:label ?seatname . filter(lang(?seatname) = "en") }
         filter not exists { ?ps pq:P1534 wd:Q50393121 } # omit any where it was turned down
         { select ?mp (count(distinct ?position) as ?parliaments) where
              { ?mp p:P39 ?ps . ?ps ps:P39 ?position . ?position wdt:P279 wd:Q18018860. 
@@ -70,7 +74,7 @@ query2 = """ } # set MP here
   optional { ?mp wdt:P1415 ?odnb }
   optional { ?mp wdt:P18 ?i }
   ?mp wdt:P1614 ?hop . FILTER(STRSTARTS(?hop, "1386")).
-} group by ?mp ?mpLabel ?parliaments ?wikipedia ?odnb ?hop ?born ?died """
+} group by ?mp ?mpLabel ?parliaments ?seats ?wikipedia ?odnb ?hop ?born ?died """
 
 queryA = query1 + member + query2
 
@@ -84,7 +88,6 @@ print(wdqsA)
 with open("wdqsA.json", "w") as write_file:
     json.dump(wdqsA, write_file)
 
-# now query B
 # now to break it down
 
 for item in wdqsA['results']['bindings']:
@@ -112,10 +115,21 @@ for item in wdqsA['results']['bindings']:
         # no birth or death
         else:
             slug = name
-    if parliaments == '1':
-        slug = slug + " was a medieval English MP, serving for one parliament in " + earliest
+    if 'seat' in item:
+        seats = item['seats']['value']
+        seatsword = word(seats)
+        seat = item['seat']['value']
+        if seats == '1':
+            slug = slug + " was a medieval English MP, who represented " + seat + " in"
+        else:
+            slug = slug + " was a medieval English MP, who represented " + seatsword.lower() + " constituencies in"
     else:
-        slug = slug + " was a medieval English MP, serving for " + parliamentsword.lower() + " parliaments in " + earliest + "-" + latest
+        slug = slug + " was a medieval English MP, who served for"
+    
+    if parliaments == '1':
+        slug = slug + " one parliament in " + earliest
+    else:
+        slug = slug + " " + parliamentsword.lower() + " parliaments in " + earliest + "-" + latest
     # currently only counts terms
     hop = item['hop']['value']
     if 'wikipedia' in item:
