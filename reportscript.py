@@ -48,7 +48,7 @@ for item in wdqsA['results']['bindings']:
 
 # now write the tweet
 
-tweet = "There are currently" + total + "individual MPs in the database: \n* " + uk + " served in the modern UK parliament;\n* " + gb + " in the 1707-1801 British parliament; and\n* " + eng + " in the pre-1707 English parliament."
+tweet = "There are currently " + total + " individual MPs in the database: \n* " + uk + " served in the modern UK parliament;\n* " + gb + " in the 1707-1801 British parliament; and\n* " + eng + " in the pre-1707 English parliament."
 
 print(tweet)
 
