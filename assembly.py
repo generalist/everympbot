@@ -1,4 +1,4 @@
-# version 1.2
+# version 1.3
 #
 # multiline slug that can cope with multiple parties, terms
 # adds a counter for seats and parties
@@ -13,8 +13,9 @@
 # image is put into a seperate file, and nextimage.txt contains the filename
 #
 # 1.2 adds a log to say there was an image
+# 1.3 adds Who's Who
 
-version = '1.2' # set version here for logging
+version = '1.3' # set version here for logging
 
 import requests
 import json
@@ -44,7 +45,7 @@ query1 = """# script to generate items for @everympbot - andrew@generalist.org.u
 
 select distinct ?mp ?mpLabel ?parties ?seats 
 (sample(?seatname) as ?seat) (sample(?partyname) as ?party)
-(year(?born) as ?birthyear) (year(?died) as ?deathyear) ?wikipedia ?odnb ?rush
+(year(?born) as ?birthyear) (year(?died) as ?deathyear) ?wikipedia ?odnb ?rush ?whoswho
 (sample(?h) as ?hansard) (sample(?i) as ?image)
 where
 {
@@ -82,8 +83,9 @@ query2 = """ } # set MP here
   optional { ?mp wdt:P1415 ?odnb }
   optional { ?mp wdt:P4471 ?rush }
   optional { ?mp wdt:P2015 ?h }
+  optional { ?mp wdt:P4789 ?whoswho }
   optional { ?mp wdt:P18 ?i }
-} group by ?mp ?mpLabel ?parties ?seats ?born ?died ?wikipedia ?odnb ?rush """
+} group by ?mp ?mpLabel ?parties ?seats ?born ?died ?wikipedia ?odnb ?rush ?whoswho """
 
 queryA = query1 + member + query2
 
@@ -204,6 +206,10 @@ for item in wdqsA['results']['bindings']:
     if 'odnb' in item:
         odnb = item['odnb']['value']
         links = links + ' | ODNB: https://doi.org/10.1093/ref:odnb/' + odnb
+    else:
+        if 'whoswho' in item:
+            whoswho = item['whoswho']['value']
+            links = links + ' | Who\'s Who: https://www.ukwhoswho.com/view/article/oupww/whoswho/' + whoswho
     if 'rush' in item:
         rush = item['rush']['value']
         links = links + ' | Rush: https://membersafter1832.historyofparliamentonline.org/members/' + rush
@@ -265,4 +271,3 @@ else:
 # log padded with tabs to be blank
 
 quit ()
-
