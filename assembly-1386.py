@@ -1,13 +1,14 @@
-# version 1.2
+# version 1.3
 #
 # this is hardcoded to look for very early Parliaments -
 # currently only MPs in the HoP 1386-1421 volumes
 # 
 # 1.1 adds born/died dates
-# 1.1 adds constituencies if possible
+# 1.2 adds constituencies if possible
+# 1.3 adds a user-agent field to the request
 
-version = '1386-1.2' # set version here for logging
-
+version = '1386-1.3' # set version here for logging
+headers = { 'User-Agent': 'everympbot/1386-1.3 (https://github.com/generalist/everympbot)' }
 
 import requests
 import json
