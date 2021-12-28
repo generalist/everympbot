@@ -21,6 +21,8 @@ A second pair of scripts, `twitterbot-1386.sh` and `assembly-1386.py`, generate 
 * 1.0 - changed to a multi-line tweet posted with [twython](https://github.com/ryanmcgrath/twython) 
 * 1.1 - adds support for images
 * 1.2 - logs image correctly
+* 1.3 - adds Who's Who
+* 1.4 - fixes user-agent issues
 
 **Generating sourceids.txt:**
 
