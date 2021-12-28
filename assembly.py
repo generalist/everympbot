@@ -1,4 +1,4 @@
-# version 1.3
+# version 1.4
 #
 # multiline slug that can cope with multiple parties, terms
 # adds a counter for seats and parties
@@ -14,8 +14,10 @@
 #
 # 1.2 adds a log to say there was an image
 # 1.3 adds Who's Who
+# 1.4 adds a user-agent field to the request
 
-version = '1.3' # set version here for logging
+version = '1.4' # set version here for logging
+headers = { 'User-Agent': 'everympbot/1.4 (https://github.com/generalist/everympbot)' }
 
 import requests
 import json
@@ -255,7 +257,7 @@ with open("nexttweet.txt", "w") as candidates:
 if 'imagelink' in globals():
     print(imagelink)
     print(imagetype)
-    img = requests.get(imagelink, allow_redirects=True)
+    img = requests.get(imagelink, allow_redirects=True, headers=headers)
     filename = 'twitterimage.' + imagetype
     print(filename)
     open(filename, 'wb').write(img.content)
