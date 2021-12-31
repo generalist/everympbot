@@ -1,14 +1,16 @@
-# version 1.3
+# version 1.4
 #
 # this is hardcoded to look for very early Parliaments -
-# currently only MPs in the HoP 1386-1421 volumes
+# currently only MPs in the HoP 1386-1421/1509-1558 volumes
 # 
 # 1.1 adds born/died dates
 # 1.2 adds constituencies if possible
 # 1.3 adds a user-agent field to the request
+# 1.4 adds support for multiple HoP volumes (by picking the later one)
+#     and drops "medieval" to allow bringing in 1500s
 
-version = '1386-1.3' # set version here for logging
-headers = { 'User-Agent': 'everympbot/1386-1.3 (https://github.com/generalist/everympbot)' }
+version = '1386-1.4' # set version here for logging
+headers = { 'User-Agent': 'everympbot/1386-1.4 (https://github.com/generalist/everympbot)' }
 
 import requests
 import json
@@ -34,12 +36,13 @@ print(member)
 
 url = 'https://query.wikidata.org/sparql'
 query1 = """# script to generate items for @everympbot - andrew@generalist.org.uk
-# using the 1386 HoP data
+# using early HoP data
 
 select distinct ?mp ?mpLabel ?parliaments ?seats (sample(?seatname) as ?seat)
-?wikipedia ?odnb ?hop
+?wikipedia ?odnb 
 (min(?startyear) as ?earliest) (max(?endyear) as ?latest)
 (sample(?i) as ?image)
+(max(?hop) as ?histparl)
 (year(?born) as ?birthyear) (year(?died) as ?deathyear) 
 where
 { 
@@ -74,8 +77,8 @@ query2 = """ } # set MP here
              ?wikipedia schema:isPartOf <https://en.wikipedia.org/>. }
   optional { ?mp wdt:P1415 ?odnb }
   optional { ?mp wdt:P18 ?i }
-  ?mp wdt:P1614 ?hop . FILTER(STRSTARTS(?hop, "1386")).
-} group by ?mp ?mpLabel ?parliaments ?seats ?wikipedia ?odnb ?hop ?born ?died """
+  ?mp wdt:P1614 ?hop .
+} group by ?mp ?mpLabel ?parliaments ?seats ?wikipedia ?odnb ?born ?died """
 
 queryA = query1 + member + query2
 
@@ -121,25 +124,26 @@ for item in wdqsA['results']['bindings']:
         seatsword = word(seats)
         seat = item['seat']['value']
         if seats == '1':
-            slug = slug + " was a medieval English MP, who represented " + seat + " in"
+            slug = slug + " was an English MP, who represented " + seat + " in"
         else:
-            slug = slug + " was a medieval English MP, who represented " + seatsword.lower() + " constituencies in"
+            slug = slug + " was an English MP, who represented " + seatsword.lower() + " constituencies in"
     else:
-        slug = slug + " was a medieval English MP, who served for"
+        slug = slug + " was an English MP, who served for"
     
     if parliaments == '1':
         slug = slug + " one parliament in " + earliest
     else:
         slug = slug + " " + parliamentsword.lower() + " parliaments in " + earliest + "-" + latest
     # currently only counts terms
-    hop = item['hop']['value']
+    hop = item['histparl']['value']
     if 'wikipedia' in item:
         wikilink = item['wikipedia']['value']
         links = " | Wikipedia: " + wikilink
     else:
         links = " | Wikidata: " + mp
     links = links + " | History of Parliament: https://www.historyofparliamentonline.org/volume/" + hop
-    # assumes HoP is always present (it is)
+    # assumes HoP is always present (it is required in the search)
+    # max() ensures we get the newest one in all cases
     if 'odnb' in item:
         odnb = item['odnb']['value']
         links = links + ' | ODNB: https://doi.org/10.1093/ref:odnb/' + odnb
