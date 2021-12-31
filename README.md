@@ -8,7 +8,7 @@ The second script,`tweeting.py`, pulls credentials from `config.txt` and then us
 
 The shell script can be run manually or set to run on a regular basis.
 
-A second pair of scripts, `twitterbot-1386.sh` and `assembly-1386.py`, generate a simplified tweet for medieval MPs (currently only using the 1386-1421 HoP volume), using a seperate candidates file (`sourceids-1386.txt`)
+A second pair of scripts, `twitterbot-1386.sh` and `assembly-1386.py`, generate a simplified tweet for early MPs (currently only using the 1386-1421/1509-1558 HoP volumes), using a seperate candidates file (`sourceids-1386.txt`)
 
 **Version log**
 
