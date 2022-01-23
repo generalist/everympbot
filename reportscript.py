@@ -3,7 +3,7 @@
 # 1.0 is barebones
 # 1.1 adds a count for MPs in the pool of candidates
 
-version = 'report-1.0' # set version here for logging
+version = 'report-1.1' # set version here for logging
 
 import requests
 import json
