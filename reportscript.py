@@ -1,6 +1,7 @@
 # report script for everympbot on the total number of MPs
 # 
 # 1.0 is barebones
+# 1.1 adds a count for MPs in the pool of candidates
 
 version = 'report-1.0' # set version here for logging
 
@@ -46,9 +47,15 @@ for item in wdqsA['results']['bindings']:
     gb = item['gb_count']['value']
     eng = item['eng_count']['value']
 
+# now find how many local options there are
+
+count1 = len(open("sourceids.txt").readlines(  ))
+count2 = len(open("sourceids-1386.txt").readlines(  ))
+count = count1 + count2
+
 # now write the tweet
 
-tweet = "There are currently " + total + " individual MPs in the database: \n* " + uk + " served in the modern UK parliament;\n* " + gb + " in the 1707-1801 British parliament; and\n* " + eng + " in the pre-1707 English parliament."
+tweet = "There are currently " + total + " individual MPs in the database: \n* " + uk + " served in the modern UK parliament;\n* " + gb + " in the 1707-1801 British parliament; and\n* " + eng + " in the pre-1707 English parliament.\n\n" + str(count) + " are in the pool to be tweeted."
 
 print(tweet)
 
